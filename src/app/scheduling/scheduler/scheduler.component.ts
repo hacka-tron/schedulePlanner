@@ -13,7 +13,6 @@ export class SchedulerComponent implements OnInit {
 
   ngOnInit() {
     this.courses = this.scheduleService.getCourses();
-    console.log(this.courses);
   }
 
 }
