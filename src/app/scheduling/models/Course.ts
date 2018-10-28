@@ -3,5 +3,5 @@ export interface Course {
   credit_hours: number,
   name: string,
   description: string,
-  prereqs:  number[]
+  prereqs:  string[]
 }

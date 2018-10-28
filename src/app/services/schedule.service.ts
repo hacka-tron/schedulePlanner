@@ -7,24 +7,59 @@ import { environment } from "../../environments/environment";
 import { Course } from "../scheduling/models/Course";
 import { Semester } from "../scheduling/models/Semester";
 
-const BACKEND_URL = environment.backendApiUrl ;
+const BACKEND_COURSE_URL = environment.backendApiUrl + "/courses";
 
 @Injectable({
   providedIn: "root"
 })
 export class ScheduleService {
+  private courses: Course[];
+  private coursesUpdated = new Subject<Course[]>();
 
-  constructor() {}
+  private semesters: Semester[];
+  private semestersUpdated = new Subject<Semester[]>();
 
-  courses: Course[] = [{id: "cse1223", credit_hours: 3, name: "Intro To Java", description: "good class", prereqs: []}]
-  semesters: Semester[]= [{id:0, semester: "Autumn", year: 2018, courses: []}, {id:1,  semester: "Spring", year: 2019, courses: []}, {id:2, semester: "Autumn", year: 2019, courses: []}]
+  constructor(private http: HttpClient) {}
 
-  getCourses(){
-    return this.courses;
+  getCourses() {
+    this.http
+      .get<{ message: string; courses: Course[] }>(BACKEND_COURSE_URL)
+      .pipe(
+        map(responseData => {
+          return responseData.courses.map(course => {
+            return {
+              id: course.id,
+              credit_hours: course.credit_hours,
+              name: course.name,
+              description: course.description,
+              prereqs: course.prereqs
+            };
+          });
+        })
+      )
+      .subscribe(transformedCourses => {
+        this.courses = transformedCourses;
+        this.coursesUpdated.next([...this.courses]);
+      });
   }
 
-  getSemesters(){
+  addCourse(insertCourse: Course) {
+    this.http
+      .post<{ message: string; course: Course }>(
+        BACKEND_COURSE_URL,
+        insertCourse
+      )
+      .subscribe(result => {
+        console.log(result);
+      });
+  }
+
+  getSemesters() {
     return this.semesters;
+  }
+
+  getUpdatedCoursesListner() {
+    return this.coursesUpdated.asObservable();
   }
 
 }
